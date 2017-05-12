@@ -1,0 +1,192 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+
+import java.util.HashSet;
+import java.util.Arrays;
+
+/**
+ * Perform n-gram analysis of a string.
+ * 
+ * Analyses the frequency with which distinct n-grams, of length n,
+ * appear in an input string. For the purposes of all analyses of the input
+ * string, the final n-1 n-grams appearing in the string should be
+ * "filled out" to a length of n characters, by adding
+ * a sequence of contiguous characters from the start of the string.
+ * e.g. "abbc" includes "bca" and "cab" in its 3-grams
+ * 
+ * @Angus Warman (22204067) 
+ * @12/5/17
+ */
+public class NgramAnalyser
+{
+    private char[] focus;
+    
+    /** dictionary of all distinct n-grams and their frequencies */
+    private HashMap<String,Integer> ngram;
+    
+    /** contains each individual ngram */
+    private Set<String> ngramList;
+
+    /** number of distinct characters in the input */
+    private int alphabetSize;
+    
+    /** contains one of each character in the input */
+    private ArrayList<Character> lineContents;
+
+    /** n-gram size for this object (new field) */
+    private int ngramSize;
+    
+    /** counts each new ngram found */
+    private int ngramCount;
+    
+    /** this is a stop-gap measure until Sets do a thing */
+    private ArrayList<String> tempNgramList;
+
+    /** 
+     * Analyse the frequency with which distinct n-grams, of length n,
+     * appear in an input string. 
+     * n-grams at the end of the string wrap to the front
+     * e.g. "abbbbc" includes "bca" and "cab" in its 3-grams
+     * @param int n size of n-grams to create
+     * @param String inp input string to be modelled
+     */
+    public NgramAnalyser(int n, String inp) 
+    { 
+        if(inp=="" || inp==null || n<1 || n>inp.length())
+        {
+            throw new IllegalArgumentException("Input fields unsuitable. Check input string is not empty, and that 0<n<string length");
+        }
+        
+        ngram = new HashMap<>();
+        
+        ngramSize = n;
+        focus = inp.toCharArray();
+        
+        lineContents = new ArrayList<>();
+        tempNgramList = new ArrayList<>();
+        alphabetSize = 0;
+        ngramCount = 0;
+        
+        for(int a=0;a<focus.length;a++)
+        {
+            String ng = String.valueOf(focus[a]);
+            for(int b=1;b<ngramSize;b++)
+            {
+                ng = ng + String.valueOf(focus[(a+b)%focus.length]);
+            }
+            
+            if(ngram.get(ng) != null)
+            {
+                ngram.put(ng, ngram.get(ng)+1);
+                ngramCount++;
+            }else{
+                ngram.put(ng, 1);  
+                ngramCount++;
+                tempNgramList.add(ng);
+            }
+        }
+    }
+
+    /** 
+     * Analyses the input text for n-grams of size 1.
+     */
+    public NgramAnalyser(String inp) 
+    {
+        this(1,inp);
+    }
+    
+    public NgramAnalyser()
+    {
+        this(3, "The quick brown fox jumped over the lazy dog.");
+    }
+
+    /**
+     * @return int the size of the alphabet of a given input
+     */
+    public int getAlphabetSize() {
+        lineContents = new ArrayList<>();
+        alphabetSize = 0;
+        for(int a=0;a<focus.length;a++)
+        {
+            if(!lineContents.contains(focus[a]))
+            {
+                lineContents.add(focus[a]);
+                alphabetSize++;
+            }
+        }
+        
+        return alphabetSize;
+    }
+
+    /**
+     * @return the total number of distinct n-grams appearing
+     *         in the input text.
+     */
+    public int getDistinctNgramCount() {
+        
+        return ngram.size();
+    }
+
+    /** 
+     * @return Return a set containing all the distinct n-grams
+     *         in the input string.
+     */
+    public Set<String> getDistinctNgrams() {
+        return ngram.keySet();
+    }
+
+    /**
+     * @return the total number of n-grams appearing
+     *         in the input text (not requiring them to be distinct)
+     */
+    public int getNgramCount() {
+        
+        return ngramCount;
+    }
+
+    /** Return the frequency with which a particular n-gram appears
+     * in the text. If it does not appear at all, return 0.
+     * 
+     * @param ngram The n-gram to get the frequency of
+     * @return The frequency with which the n-gram appears.
+     */
+    public int getNgramFrequency(String ngram) {
+        int found = 0;
+        
+        if(this.ngram.get(ngram)==null)
+        {
+            found = 0;
+        }
+        else
+        {
+            found = this.ngram.get(ngram);
+        }
+        
+        return found;
+    }
+
+    /**
+     * Generate a summary of the ngrams for this object.
+     * @return a string representation of the n-grams in the input text 
+     * comprising the ngram size and then each ngram and its frequency
+     * where ngrams are presented in alphabetical order.   
+     * 
+     * ALSO THIS IS TOTALLY TEMPORARY, DON'T RELY ON ANYTHING
+     */
+    public String toString()
+    {
+        tempNgramList = tempNgramList; //Alphabetise here
+        
+        String summary = ngramSize + "\r";
+        for(int a = 0; a<tempNgramList.size(); a++)
+        {
+            summary = summary + tempNgramList.get(a) + " " + ngram.get(tempNgramList.get(a)) + "\r" + " ";
+        }
+        
+        System.out.println(summary);
+        
+        return summary;
+    }
+
+}
